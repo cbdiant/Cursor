@@ -47,6 +47,7 @@ OUT = os.path.join(ROOT, "Strawberry DNA Extraction Science Fair.pptx")
 STRAWBERRY_IMG = os.path.join(ROOT, "assets", "strawberry.png")
 HELIX_IMG = os.path.join(ROOT, "assets", "dna-helix.png")
 MATERIALS_IMG = os.path.join(ROOT, "assets", "materials.png")
+ALCOHOL_IMG = os.path.join(ROOT, "assets", "finley-alcohol.png")
 
 
 def rgb(value):
@@ -1027,17 +1028,18 @@ def slide_procedure(prs):
         "Add a spoonful of cold alcohol. Do not tilt the tube or mix.",
         "Watch the line where the strawberry liquid meets the alcohol.",
     ]
-    cols, rows = 3, 3
-    left, top = 0.38, 1.42
-    grid_w, grid_h = 10.24, 5.50
-    gap_x, gap_y = 0.18, 0.14
-    col_w = (grid_w - gap_x * (cols - 1)) / cols
+    cols, rows = 2, 5
+    left, top = 0.36, 1.40
+    grid_w, grid_h = 6.05, 5.55
+    gap_x, gap_y = 0.14, 0.08
+    col_w = (grid_w - gap_x) / cols
     row_h = (grid_h - gap_y * (rows - 1)) / rows
     for i, text in enumerate(steps):
-        r, c = divmod(i, cols)
+        c = 0 if i < 5 else 1
+        r = i if i < 5 else i - 5
         x = left + c * (col_w + gap_x)
         y = top + r * (row_h + gap_y)
-        circle = 0.42
+        circle = 0.34
         add_oval(s, x, y + (row_h - circle) / 2, circle, circle, BERRY)
         plain(
             s,
@@ -1046,7 +1048,7 @@ def slide_procedure(prs):
             circle,
             circle,
             str(i + 1),
-            size=16,
+            size=13,
             bold=True,
             color=WHITE,
             align="center",
@@ -1055,16 +1057,50 @@ def slide_procedure(prs):
         )
         plain(
             s,
-            x + 0.52,
+            x + 0.42,
             y,
-            col_w - 0.58,
+            col_w - 0.46,
             row_h,
             text,
-            size=15,
+            size=13,
             color=INK,
             anchor="middle",
-            leading=1.05,
+            leading=1.02,
         )
+
+    card(s, 6.58, 1.40, 4.04, 5.55)
+    plain(
+        s,
+        6.72,
+        1.48,
+        3.76,
+        0.30,
+        "FINLEY ADDS THE ALCOHOL",
+        size=11,
+        bold=True,
+        color=BERRY,
+        align="center",
+        anchor="middle",
+        spacing=60,
+    )
+    photo_h = 4.36
+    photo_w = photo_h * (450 / 600)
+    photo_x = 6.58 + (4.04 - photo_w) / 2
+    s.shapes.add_picture(
+        ALCOHOL_IMG, Inches(photo_x), Inches(1.84), Inches(photo_w), Inches(photo_h)
+    )
+    plain(
+        s,
+        6.72,
+        6.26,
+        3.76,
+        0.58,
+        "Finley adds the cold alcohol with a dropper so the two liquids stay in layers.",
+        size=12,
+        color=INK,
+        align="center",
+        anchor="middle",
+    )
 
     add_round(s, 0.38, 7.12, 10.24, 1.05, SOFT_GOLD, line="E7D7B8", radius=0.08)
     add_rect(s, 0.38, 7.28, 0.09, 0.73, GOLD)
