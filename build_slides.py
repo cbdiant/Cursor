@@ -48,6 +48,11 @@ STRAWBERRY_IMG = os.path.join(ROOT, "assets", "strawberry.png")
 HELIX_IMG = os.path.join(ROOT, "assets", "dna-helix.png")
 MATERIALS_IMG = os.path.join(ROOT, "assets", "materials.png")
 ALCOHOL_IMG = os.path.join(ROOT, "assets", "finley-alcohol.png")
+SALT_IMG = os.path.join(ROOT, "assets", "salt.png")
+FUNNEL_IMG = os.path.join(ROOT, "assets", "funnel-mash.png")
+FILTER_IMG = os.path.join(ROOT, "assets", "filter-mash.png")
+DRAIN_IMG = os.path.join(ROOT, "assets", "drain-mash.png")
+COLLECT_IMG = os.path.join(ROOT, "assets", "collect-liquid.png")
 
 
 def rgb(value):
@@ -247,6 +252,49 @@ def add_pic(slide, path, x, y, size):
 def brand_icons(slide, x, y, size=0.62, gap=0.08):
     add_pic(slide, STRAWBERRY_IMG, x, y, size)
     add_pic(slide, HELIX_IMG, x + size + gap, y, size)
+
+
+def photo_card(slide, x, y, w, h, path, kicker, caption):
+    """Portrait photo with a short label and caption. Aspect is 450x600."""
+    card(slide, x, y, w, h)
+    plain(
+        slide,
+        x + 0.10,
+        y + 0.08,
+        w - 0.20,
+        0.32,
+        kicker,
+        size=12,
+        bold=True,
+        color=BERRY,
+        align="center",
+        anchor="middle",
+        spacing=40,
+    )
+    caption_h = 0.78
+    frame_top = y + 0.46
+    frame_h = h - 0.46 - caption_h
+    avail_w = w - 0.24
+    photo_h = frame_h
+    photo_w = photo_h * (450 / 600)
+    if photo_w > avail_w:
+        photo_w = avail_w
+        photo_h = photo_w / (450 / 600)
+    px = x + (w - photo_w) / 2
+    py = frame_top + (frame_h - photo_h) / 2
+    slide.shapes.add_picture(path, Inches(px), Inches(py), Inches(photo_w), Inches(photo_h))
+    plain(
+        slide,
+        x + 0.12,
+        y + h - caption_h,
+        w - 0.24,
+        caption_h - 0.08,
+        caption,
+        size=14,
+        color=INK,
+        align="center",
+        anchor="middle",
+    )
 
 
 def header(slide, title):
@@ -1130,8 +1178,75 @@ def slide_procedure(prs):
     )
 
 
+def slide_mixing(prs):
+    s = new_slide(
+        prs,
+        "Mount on the RIGHT panel, top, above Collect and Drain.",
+    )
+    header(s, "Mixing and Filtering")
+    items = [
+        (
+            SALT_IMG,
+            "ADDING THE SALT",
+            "Finley adds salt to the extraction mixture.",
+        ),
+        (
+            FUNNEL_IMG,
+            "FUNNEL THE MASH",
+            "Finley funnels the mash through the cloth.",
+        ),
+        (
+            FILTER_IMG,
+            "FILTER THE MASH",
+            "Finley filters the mash and keeps the solids out.",
+        ),
+    ]
+    gap = 0.14
+    x0, y, h = 0.36, 1.16, 6.15
+    w = (10.28 - gap * 2) / 3
+    for i, (path, kicker, caption) in enumerate(items):
+        photo_card(s, x0 + i * (w + gap), y, w, h, path, kicker, caption)
+    plain(
+        s,
+        0.40,
+        7.48,
+        10.20,
+        0.55,
+        "Salt is stirred into the soap and water first. Then the mashed strawberry is poured and pressed through the cloth.",
+        size=15,
+        color=INK,
+        align="center",
+        anchor="middle",
+    )
+
+
+def slide_collect(prs):
+    s = new_slide(
+        prs,
+        "Mount on the RIGHT panel, under Mixing and Filtering. Read left to right: the mash drains, then Finley collects the liquid.",
+    )
+    header(s, "Drain and Collect")
+    items = [
+        (
+            DRAIN_IMG,
+            "DRAIN THE MASH",
+            "The mash drains through the cloth into the jar.",
+        ),
+        (
+            COLLECT_IMG,
+            "COLLECT THE LIQUID",
+            "Finley collects the filtered liquid for the next step.",
+        ),
+    ]
+    gap = 0.18
+    x0, y, h = 0.36, 1.16, 6.90
+    w = (10.28 - gap) / 2
+    for i, (path, kicker, caption) in enumerate(items):
+        photo_card(s, x0 + i * (w + gap), y, w, h, path, kicker, caption)
+
+
 def slide_results(prs):
-    s = new_slide(prs, "Mount on the RIGHT panel, top. Tape a photo of your tube beside this sheet if you have one.")
+    s = new_slide(prs, "Mount on the RIGHT panel, under Collect and Drain.")
     header(s, "Results")
 
     card(s, 0.38, 1.16, 4.85, 6.95)
@@ -1281,7 +1396,7 @@ def slide_results(prs):
 
 
 def slide_conclusion(prs):
-    s = new_slide(prs, "Mount on the RIGHT panel, under Results.")
+    s = new_slide(prs, "Mount on the RIGHT panel, under Results. The right panel, top to bottom: Mixing and Filtering, Collect and Drain, Results, Conclusion.")
     header(s, "Conclusion")
 
     add_round(s, 0.40, 1.18, 10.20, 1.25, SOFT_LEAF, line="C9E6D4", radius=0.08)
@@ -1386,6 +1501,8 @@ def build():
     slide_research(prs)
     slide_materials(prs)
     slide_procedure(prs)
+    slide_mixing(prs)
+    slide_collect(prs)
     slide_results(prs)
     slide_conclusion(prs)
     # Drop unused empty layout slide if the default template added none — it doesn't.
