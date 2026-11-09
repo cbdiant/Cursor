@@ -58,6 +58,8 @@ DNA_100X_A = os.path.join(ROOT, "assets", "dna-100x-a.jpg")
 DNA_100X_B = os.path.join(ROOT, "assets", "dna-100x-b.jpg")
 DNA_500X = os.path.join(ROOT, "assets", "dna-500x.jpg")
 DNA_1000X = os.path.join(ROOT, "assets", "dna-1000x.jpg")
+STRAWBERRY_FACE = os.path.join(ROOT, "assets", "strawberry-smile.png")
+HELIX_FACE = os.path.join(ROOT, "assets", "helix-smile.png")
 MICRO_ASPECT = 2880 / 2160
 
 
@@ -253,6 +255,108 @@ def new_slide(prs, note):
 
 def add_pic(slide, path, x, y, size):
     slide.shapes.add_picture(path, Inches(x), Inches(y), Inches(size), Inches(size))
+
+
+def _eye(draw, scale, cx, cy, rx, ry, outline):
+    s = scale
+    draw.ellipse(
+        [(cx - rx) * s, (cy - ry + 5) * s, (cx + rx) * s, (cy + ry + 7) * s],
+        fill=(44, 36, 31, 40),
+    )
+    draw.ellipse(
+        [(cx - rx) * s, (cy - ry) * s, (cx + rx) * s, (cy + ry) * s],
+        fill=(255, 252, 247, 255),
+        outline=outline,
+        width=max(2, int(3 * s)),
+    )
+    px, py = cx + rx * 0.06, cy + ry * 0.10
+    prx, pry = rx * 0.46, ry * 0.48
+    draw.ellipse(
+        [(px - prx) * s, (py - pry) * s, (px + prx) * s, (py + pry) * s],
+        fill=(44, 36, 31, 255),
+    )
+    hx, hy = cx - rx * 0.22, cy - ry * 0.30
+    draw.ellipse(
+        [
+            (hx - rx * 0.18) * s,
+            (hy - ry * 0.16) * s,
+            (hx + rx * 0.18) * s,
+            (hy + ry * 0.16) * s,
+        ],
+        fill=(255, 255, 255, 240),
+    )
+
+
+def _smile(draw, scale, cx, cy, rx, ry, width, color, outline=None):
+    box = [
+        (cx - rx) * scale,
+        (cy - ry) * scale,
+        (cx + rx) * scale,
+        (cy + ry) * scale,
+    ]
+    if outline:
+        draw.arc(box, start=18, end=162, fill=outline, width=int((width + 8) * scale))
+    draw.arc(box, start=18, end=162, fill=color, width=int(width * scale))
+
+
+def _faced(src, crop, draw_face):
+    from PIL import Image, ImageDraw
+
+    image = Image.open(src).convert("RGBA")
+    scale = 4
+    overlay = Image.new("RGBA", (image.width * scale, image.height * scale), (0, 0, 0, 0))
+    draw_face(ImageDraw.Draw(overlay), scale)
+    overlay = overlay.resize(image.size, Image.Resampling.LANCZOS)
+    return Image.alpha_composite(image, overlay).crop(crop)
+
+
+def write_character_art():
+    """Eyes and a smile on the same strawberry and helix used on the other slides."""
+
+    def strawberry_face(draw, scale):
+        outline = (124, 22, 40, 255)
+        _eye(draw, scale, 352, 418, 46, 56, outline)
+        _eye(draw, scale, 552, 418, 46, 56, outline)
+        _smile(
+            draw,
+            scale,
+            452,
+            520,
+            118,
+            78,
+            16,
+            (255, 248, 236, 255),
+            outline,
+        )
+
+    def helix_face(draw, scale):
+        # A cream face inside the top loop, in front of the base pairs.
+        draw.ellipse(
+            [438 * scale, 158 * scale, 612 * scale, 292 * scale],
+            fill=(255, 247, 236, 255),
+        )
+        outline = (44, 36, 31, 255)
+        _eye(draw, scale, 482, 198, 30, 36, outline)
+        _eye(draw, scale, 568, 198, 30, 36, outline)
+        _smile(draw, scale, 525, 252, 48, 32, 10, (163, 29, 54, 255))
+
+    _faced(STRAWBERRY_IMG, (118, 20, 790, 886), strawberry_face).save(STRAWBERRY_FACE)
+    _faced(HELIX_IMG, (350, 20, 706, 1036), helix_face).save(HELIX_FACE)
+
+
+def fit_picture(slide, path, aspect, margin=0.18, top=0.24):
+    """Place a picture as large as the slide allows, without cropping or stretching."""
+    avail_w = SW - margin * 2
+    avail_h = SH - top - margin
+    if avail_w / avail_h > aspect:
+        height = avail_h
+        width = height * aspect
+    else:
+        width = avail_w
+        height = width / aspect
+    x = (SW - width) / 2
+    y = top + (avail_h - height) / 2
+    slide.shapes.add_picture(path, Inches(x), Inches(y), Inches(width), Inches(height))
 
 
 def brand_icons(slide, x, y, size=0.62, gap=0.08):
@@ -1589,6 +1693,22 @@ def slide_conclusion(prs):
         )
 
 
+def slide_strawberry_face(prs):
+    s = new_slide(
+        prs,
+        "Extra decoration. The smiling strawberry fills the sheet. It can sit beside the title.",
+    )
+    fit_picture(s, STRAWBERRY_FACE, 672 / 866)
+
+
+def slide_helix_face(prs):
+    s = new_slide(
+        prs,
+        "Extra decoration. The smiling DNA helix fills the height of the sheet. It can sit beside the title.",
+    )
+    fit_picture(s, HELIX_FACE, 356 / 1016)
+
+
 def build():
     prs = Presentation()
     prs.slide_width = Inches(SW)
@@ -1599,6 +1719,7 @@ def build():
         "Science fair poster slides. Print landscape, letter, actual size, one slide per page."
     )
     prs.core_properties.category = "Science Fair"
+    write_character_art()
     slide_title(prs)
     slide_question(prs)
     slide_hypothesis(prs)
@@ -1611,6 +1732,8 @@ def build():
     slide_data(prs)
     slide_magnification(prs)
     slide_conclusion(prs)
+    slide_strawberry_face(prs)
+    slide_helix_face(prs)
     # Drop unused empty layout slide if the default template added none — it doesn't.
     prs.save(OUT)
     print(OUT)
