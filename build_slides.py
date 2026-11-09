@@ -53,6 +53,12 @@ FUNNEL_IMG = os.path.join(ROOT, "assets", "funnel-mash.png")
 FILTER_IMG = os.path.join(ROOT, "assets", "filter-mash.png")
 DRAIN_IMG = os.path.join(ROOT, "assets", "drain-mash.png")
 COLLECT_IMG = os.path.join(ROOT, "assets", "collect-liquid.png")
+DNA_40X = os.path.join(ROOT, "assets", "dna-40x.jpg")
+DNA_100X_A = os.path.join(ROOT, "assets", "dna-100x-a.jpg")
+DNA_100X_B = os.path.join(ROOT, "assets", "dna-100x-b.jpg")
+DNA_500X = os.path.join(ROOT, "assets", "dna-500x.jpg")
+DNA_1000X = os.path.join(ROOT, "assets", "dna-1000x.jpg")
+MICRO_ASPECT = 2880 / 2160
 
 
 def rgb(value):
@@ -254,8 +260,8 @@ def brand_icons(slide, x, y, size=0.62, gap=0.08):
     add_pic(slide, HELIX_IMG, x + size + gap, y, size)
 
 
-def photo_card(slide, x, y, w, h, path, kicker, caption):
-    """Portrait photo with a short label and caption. Aspect is 450x600."""
+def photo_card(slide, x, y, w, h, path, kicker, caption, aspect=450 / 600):
+    """Photo card. aspect is width divided by height."""
     card(slide, x, y, w, h)
     plain(
         slide,
@@ -271,15 +277,15 @@ def photo_card(slide, x, y, w, h, path, kicker, caption):
         anchor="middle",
         spacing=40,
     )
-    caption_h = 0.78
+    caption_h = 0.82
     frame_top = y + 0.46
     frame_h = h - 0.46 - caption_h
     avail_w = w - 0.24
     photo_h = frame_h
-    photo_w = photo_h * (450 / 600)
+    photo_w = photo_h * aspect
     if photo_w > avail_w:
         photo_w = avail_w
-        photo_h = photo_w / (450 / 600)
+        photo_h = photo_w / aspect
     px = x + (w - photo_w) / 2
     py = frame_top + (frame_h - photo_h) / 2
     slide.shapes.add_picture(path, Inches(px), Inches(py), Inches(photo_w), Inches(photo_h))
@@ -1395,6 +1401,104 @@ def slide_results(prs):
         )
 
 
+def slide_data(prs):
+    s = new_slide(
+        prs,
+        "Mount with Results. This slide is the 40X overview and the two 100X views.",
+    )
+    header(s, "Data and Pictures")
+    items = [
+        (
+            DNA_40X,
+            "40X",
+            "The whole DNA clump. Scale bar: 1,000 micrometers.",
+        ),
+        (
+            DNA_100X_A,
+            "100X",
+            "The clump looks stringy. Scale bar: 250 micrometers.",
+        ),
+        (
+            DNA_100X_B,
+            "100X",
+            "Another 100X view of the strands. Scale bar: 250 micrometers.",
+        ),
+    ]
+    gap = 0.14
+    x0, y, h = 0.32, 1.14, 4.55
+    w = (10.36 - gap * 2) / 3
+    for i, (path, kicker, caption) in enumerate(items):
+        photo_card(
+            s, x0 + i * (w + gap), y, w, h, path, kicker, caption, aspect=MICRO_ASPECT
+        )
+    card(s, 0.32, 5.88, 10.36, 1.85)
+    plain(
+        s,
+        0.52,
+        5.96,
+        9.96,
+        0.30,
+        "WHAT THE PICTURES SHOW",
+        size=13,
+        bold=True,
+        color=BERRY,
+        spacing=80,
+        anchor="middle",
+    )
+    plain(
+        s,
+        0.52,
+        6.28,
+        9.96,
+        1.30,
+        "These are digital microscope photos of the DNA Finley collected. At 40X it is one white clump. At 100X that clump is made of many thin strands. The blue line in each photo is a scale bar. 1,000 micrometers equals 1 millimeter.",
+        size=16,
+        color=INK,
+        anchor="top",
+        leading=1.05,
+    )
+
+
+def slide_magnification(prs):
+    s = new_slide(
+        prs,
+        "Mount after Data and Pictures. This slide is the 500X and 1000X views.",
+    )
+    header(s, "Higher Magnification")
+    items = [
+        (
+            DNA_500X,
+            "500X",
+            "A thin strand up close. Scale bar: 50 micrometers.",
+        ),
+        (
+            DNA_1000X,
+            "1000X",
+            "The closest view of a strand. Scale bar: 25 micrometers.",
+        ),
+    ]
+    gap = 0.16
+    x0, y, h = 0.32, 1.14, 5.05
+    w = (10.36 - gap) / 2
+    for i, (path, kicker, caption) in enumerate(items):
+        photo_card(
+            s, x0 + i * (w + gap), y, w, h, path, kicker, caption, aspect=MICRO_ASPECT
+        )
+    card(s, 0.32, 6.38, 10.36, 1.72, fill=SOFT_LEAF, line="C9E6D4")
+    plain(
+        s,
+        0.52,
+        6.48,
+        9.96,
+        1.48,
+        "At 500X and 1000X a thin strand stands out from the clump. The scale bars are 50 and 25 micrometers. A human hair is about 70 micrometers wide, so these strands are thinner than a hair.",
+        size=16,
+        color=INK,
+        anchor="middle",
+        leading=1.08,
+    )
+
+
 def slide_conclusion(prs):
     s = new_slide(prs, "Mount on the RIGHT panel, under Results. The right panel, top to bottom: Mixing and Filtering, Collect and Drain, Results, Conclusion.")
     header(s, "Conclusion")
@@ -1504,6 +1608,8 @@ def build():
     slide_mixing(prs)
     slide_collect(prs)
     slide_results(prs)
+    slide_data(prs)
+    slide_magnification(prs)
     slide_conclusion(prs)
     # Drop unused empty layout slide if the default template added none — it doesn't.
     prs.save(OUT)
