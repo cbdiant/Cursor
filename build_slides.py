@@ -58,6 +58,7 @@ DNA_100X_A = os.path.join(ROOT, "assets", "dna-100x-a.jpg")
 DNA_100X_B = os.path.join(ROOT, "assets", "dna-100x-b.jpg")
 DNA_500X = os.path.join(ROOT, "assets", "dna-500x.jpg")
 DNA_1000X = os.path.join(ROOT, "assets", "dna-1000x.jpg")
+TUBE_IMG = os.path.join(ROOT, "assets", "tube-result.jpg")
 STRAWBERRY_FACE = os.path.join(ROOT, "assets", "strawberry-smile.png")
 HELIX_FACE = os.path.join(ROOT, "assets", "helix-smile.png")
 MICRO_ASPECT = 2880 / 2160
@@ -1359,13 +1360,13 @@ def slide_results(prs):
     s = new_slide(prs, "Mount on the RIGHT panel, under Collect and Drain.")
     header(s, "Results")
 
-    card(s, 0.38, 1.16, 4.85, 6.95)
+    card(s, 0.36, 1.16, 4.78, 6.95)
     plain(
         s,
-        0.52,
-        1.28,
-        4.55,
-        0.36,
+        0.50,
+        1.24,
+        4.50,
+        0.32,
         "IN THE TUBE",
         size=13,
         bold=True,
@@ -1374,77 +1375,33 @@ def slide_results(prs):
         spacing=120,
         anchor="middle",
     )
-
-    # Test tube geometry, in inches
-    left, top, width, height = 1.05, 1.85, 1.72, 4.85
-    r = width / 2
-    cx = left + r
-    cy = top + height - r  # center of the bottom curve
-    right = left + width
-
-    glass = [(left, top), (left, cy)]
-    glass += _arc(cx, cy, r, 180, 360, 24)[1:]
-    glass += [(right, top)]
-    add_freeform(s, glass, WHITE, line=INK, line_w=1.75)
-    # rim
-    add_rect(s, left, top - 0.03, width, 0.06, INK)
-
-    inset = 0.09
-    il, iw = left + inset, width - 2 * inset
-    ir = il + iw
-    inner_r = iw / 2
-    icx = il + inner_r
-    # Keep the inner bottom curve inside the glass
-    icy = cy
-    interface = top + 2.15
-
-    # Strawberry liquid: interface down through the rounded bottom
-    liquid = [(il, interface), (il, icy)]
-    liquid += _arc(icx, icy, inner_r, 180, 360, 24)[1:]
-    liquid += [(ir, interface)]
-    add_freeform(s, liquid, LIQUID)
-
-    # Alcohol layer
-    add_rect(s, il, top + 0.12, iw, interface - (top + 0.12), ALCOHOL)
-    # surface line
-    add_rect(s, il, top + 0.12, iw, 0.025, "F7FBFE")
-
-    # DNA cloud — white threads at the interface, drifting up
-    clouds = [
-        (cx - 0.34, interface - 0.02, 0.42, 0.20),
-        (cx - 0.02, interface - 0.16, 0.36, 0.18),
-        (cx - 0.22, interface + 0.06, 0.50, 0.16),
-        (cx + 0.16, interface - 0.04, 0.30, 0.15),
-        (cx - 0.16, interface - 0.32, 0.26, 0.14),
-        (cx + 0.08, interface - 0.40, 0.20, 0.12),
-        (cx - 0.30, interface - 0.22, 0.22, 0.12),
+    photo_h = 5.05
+    photo_w = photo_h * (450 / 600)
+    px = 0.36 + (4.78 - photo_w) / 2
+    py = 1.60
+    s.shapes.add_picture(TUBE_IMG, Inches(px), Inches(py), Inches(photo_w), Inches(photo_h))
+    layers = [
+        (T_COLOR, "Cold alcohol", "Clear layer on top"),
+        (BERRY, "Strawberry DNA", "White cloud in the middle"),
+        ("C45A52", "Strawberry mixture", "Orange layer on the bottom"),
     ]
-    for x, y, w, h in clouds:
-        add_oval(s, x, y, w, h, WHITE, line="8EA0B0", line_w=0.75)
-
-    # Labels to the right of the tube, inside the card
-    labels = [
-        (2.95, top + 0.55, T_COLOR, "Cold alcohol", "Top layer"),
-        (2.95, interface - 0.28, BERRY, "DNA", "White strands"),
-        (2.95, interface + 0.85, "C45A52", "Strawberry liquid", "Bottom layer"),
-    ]
-    for x, y, color, title, sub in labels:
-        add_oval(s, x, y + 0.08, 0.16, 0.16, color)
-        plain(s, x + 0.24, y - 0.02, 1.85, 0.28, title, size=13, bold=True, color=INK, anchor="middle")
-        plain(s, x + 0.24, y + 0.24, 1.85, 0.26, sub, size=12, color=MUTED, anchor="top")
-
-    plain(
-        s,
-        0.55,
-        6.85,
-        4.50,
-        1.05,
-        "The two liquids stay apart.\nThe DNA appears on the line between them.",
-        size=13,
-        color=MUTED,
-        align="center",
-        leading=1.12,
-    )
+    ly = 6.74
+    for color, title, sub in layers:
+        add_oval(s, 0.58, ly + 0.06, 0.16, 0.16, color)
+        plain(
+            s,
+            0.84,
+            ly,
+            1.85,
+            0.28,
+            title,
+            size=13,
+            bold=True,
+            color=INK,
+            anchor="middle",
+        )
+        plain(s, 2.70, ly, 2.20, 0.28, sub, size=12, color=MUTED, anchor="middle")
+        ly += 0.40
 
     findings = [
         ("1", "Two layers"),
@@ -1458,7 +1415,7 @@ def slide_results(prs):
         "The threads clumped together and rose into the alcohol layer.",
         "That white cloud is strawberry DNA, gathered from thousands of cells.",
     ]
-    fx, fw = 5.42, 5.20
+    fx, fw = 5.30, 5.34
     fy, gap = 1.16, 0.14
     fh = (6.95 - 3 * gap) / 4
     for i, ((num, title), body) in enumerate(zip(findings, bodies)):
