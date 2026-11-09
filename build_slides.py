@@ -6,6 +6,7 @@ and can be mounted on a tri-fold board.
 """
 
 import math
+import os
 
 from lxml import etree
 from pptx import Presentation
@@ -39,8 +40,13 @@ G_COLOR = "2C7A4E"
 C_COLOR = "A31D36"
 
 FONT = "Arial"
+AUTHOR = "Finley Grace DiAntonio"
 SW, SH = 11.0, 8.5
-OUT = "/workspace/Strawberry DNA Extraction Science Fair.pptx"
+ROOT = os.path.dirname(os.path.abspath(__file__))
+OUT = os.path.join(ROOT, "Strawberry DNA Extraction Science Fair.pptx")
+STRAWBERRY_IMG = os.path.join(ROOT, "assets", "strawberry.png")
+HELIX_IMG = os.path.join(ROOT, "assets", "dna-helix.png")
+MATERIALS_IMG = os.path.join(ROOT, "assets", "materials.png")
 
 
 def rgb(value):
@@ -233,15 +239,28 @@ def new_slide(prs, note):
     return slide
 
 
+def add_pic(slide, path, x, y, size):
+    slide.shapes.add_picture(path, Inches(x), Inches(y), Inches(size), Inches(size))
+
+
+def brand_icons(slide, x, y, size=0.62, gap=0.08):
+    add_pic(slide, STRAWBERRY_IMG, x, y, size)
+    add_pic(slide, HELIX_IMG, x + size + gap, y, size)
+
+
 def header(slide, title):
+    icon = 0.62
+    gap = 0.08
+    icon_x = SW - 0.28 - (icon * 2 + gap)
+    brand_icons(slide, icon_x, 0.22, icon, gap)
     plain(
         slide,
         0.40,
-        0.26,
-        6.6,
+        0.22,
+        5.15,
         0.58,
         title,
-        size=32,
+        size=30,
         bold=True,
         color=BERRY,
         anchor="middle",
@@ -249,17 +268,16 @@ def header(slide, title):
     )
     plain(
         slide,
-        6.15,
-        0.34,
-        4.45,
-        0.40,
-        "STRAWBERRY DNA   ·   SCIENCE FAIR",
-        size=11,
+        icon_x - 2.45,
+        0.28,
+        2.32,
+        0.48,
+        AUTHOR,
+        size=12,
         bold=True,
-        color=MUTED,
+        color=INK,
         align="right",
         anchor="middle",
-        spacing=60,
         margins=(0, 0, 0, 0),
     )
     add_rect(slide, 0.42, 0.90, 1.15, 0.045, BERRY)
@@ -326,26 +344,28 @@ def slide_title(prs):
     )
     plain(
         s,
-        0.5,
-        1.35,
-        10.0,
-        0.36,
+        1.95,
+        1.08,
+        7.10,
+        0.32,
         "SCIENCE FAIR PROJECT",
-        size=14,
+        size=13,
         bold=True,
         color=LEAF,
         align="center",
         anchor="middle",
-        spacing=280,
+        spacing=240,
     )
+    add_pic(s, STRAWBERRY_IMG, 0.32, 1.48, 1.72)
+    add_pic(s, HELIX_IMG, 8.96, 1.48, 1.72)
     plain(
         s,
-        0.5,
-        1.85,
-        10.0,
-        0.95,
+        2.05,
+        1.48,
+        6.90,
+        0.82,
         "Strawberry DNA",
-        size=60,
+        size=48,
         bold=True,
         color=INK,
         align="center",
@@ -353,30 +373,43 @@ def slide_title(prs):
     )
     plain(
         s,
-        0.5,
-        2.75,
-        10.0,
-        0.95,
+        2.05,
+        2.28,
+        6.90,
+        0.78,
         "Extraction",
-        size=60,
+        size=48,
         bold=True,
         color=BERRY,
         align="center",
         anchor="middle",
     )
-    add_rect(s, 4.55, 3.82, 1.90, 0.055, BERRY)
+    add_rect(s, 4.55, 3.18, 1.90, 0.05, BERRY)
     plain(
         s,
-        0.8,
-        4.05,
-        9.4,
-        0.85,
-        "A project about pulling DNA out of a strawberry\nwith soap, salt, and cold alcohol.",
-        size=20,
+        2.05,
+        3.32,
+        6.90,
+        0.62,
+        "Pulling DNA out of a strawberry\nwith soap, salt, and cold alcohol.",
+        size=16,
         color=MUTED,
         align="center",
         anchor="top",
-        leading=1.15,
+        leading=1.08,
+    )
+    plain(
+        s,
+        2.05,
+        3.98,
+        6.90,
+        0.40,
+        AUTHOR,
+        size=20,
+        bold=True,
+        color=INK,
+        align="center",
+        anchor="middle",
     )
 
     labels = [
@@ -387,7 +420,7 @@ def slide_title(prs):
     w, gap = 3.05, 0.18
     total = 3 * w + 2 * gap
     x0 = (SW - total) / 2
-    y = 5.25
+    y = 4.92
     h = 1.70
     for i, (accent, name, detail) in enumerate(labels):
         x = x0 + i * (w + gap)
@@ -395,9 +428,9 @@ def slide_title(prs):
         plain(
             s,
             x + 0.12,
-            y + 0.28,
+            y + 0.22,
             w - 0.24,
-            0.42,
+            0.38,
             name,
             size=14,
             bold=True,
@@ -409,9 +442,9 @@ def slide_title(prs):
         plain(
             s,
             x + 0.16,
-            y + 0.78,
+            y + 0.66,
             w - 0.32,
-            0.70,
+            0.72,
             detail,
             size=16,
             color=INK,
@@ -421,9 +454,9 @@ def slide_title(prs):
     plain(
         s,
         0.5,
-        7.20,
+        6.82,
         10.0,
-        0.40,
+        0.36,
         "All living things have DNA. This experiment makes strawberry DNA visible.",
         size=14,
         color=MUTED,
@@ -825,27 +858,27 @@ def slide_materials(prs):
         ("Plastic cup", "Catches the filtered liquid"),
     ]
     right = [
-        ("Gauze, cheesecloth, or coffee filter", "Strains out the solids"),
+        ("Gauze or coffee filter", "Strains out the solids"),
         ("Rubber band", "Holds the filter on the cup"),
-        ("Clear test tube or small cup", "Where the DNA shows up"),
+        ("Test tube or small cup", "Where the DNA shows up"),
         ("Spoon or dropper", "Moves the liquid and the alcohol"),
         ("Cold rubbing alcohol", "Kept in the freezer until use"),
         ("Paper towels", "For spills and cleanup"),
     ]
 
-    def draw_items(items, x):
-        top, row_h, col_w = 1.18, 0.82, 5.00
+    def draw_items(items, x, start):
+        top, row_h, col_w = 1.16, 0.78, 2.95
         for i, (name, why) in enumerate(items):
             y = top + i * row_h
-            add_oval(s, x, y + 0.16, 0.28, 0.28, BERRY)
+            add_oval(s, x, y + 0.08, 0.26, 0.26, BERRY)
             plain(
                 s,
                 x,
-                y + 0.16,
-                0.28,
-                0.28,
-                str(i + 1) if x < 3 else str(i + 7),
-                size=11,
+                y + 0.08,
+                0.26,
+                0.26,
+                str(start + i),
+                size=10,
                 bold=True,
                 color=WHITE,
                 align="center",
@@ -854,30 +887,52 @@ def slide_materials(prs):
             )
             plain(
                 s,
-                x + 0.40,
-                y + 0.02,
-                col_w - 0.45,
-                0.36,
+                x + 0.34,
+                y + 0.00,
+                col_w - 0.38,
+                0.32,
                 name,
-                size=16,
+                size=13,
                 bold=True,
                 color=INK,
                 anchor="middle",
             )
             plain(
                 s,
-                x + 0.40,
-                y + 0.36,
-                col_w - 0.45,
+                x + 0.34,
+                y + 0.30,
+                col_w - 0.38,
                 0.32,
                 why,
-                size=13,
+                size=11,
                 color=MUTED,
                 anchor="top",
             )
 
-    draw_items(left, 0.42)
-    draw_items(right, 5.55)
+    draw_items(left, 0.36, 1)
+    draw_items(right, 3.32, 7)
+
+    card(s, 6.42, 1.16, 4.20, 4.88)
+    plain(
+        s,
+        6.58,
+        1.24,
+        3.88,
+        0.28,
+        "OUR SUPPLIES",
+        size=12,
+        bold=True,
+        color=BERRY,
+        align="center",
+        anchor="middle",
+        spacing=120,
+    )
+    photo_h = 4.22
+    photo_w = photo_h * (450 / 600)
+    photo_x = 6.42 + (4.20 - photo_w) / 2
+    s.shapes.add_picture(
+        MATERIALS_IMG, Inches(photo_x), Inches(1.58), Inches(photo_w), Inches(photo_h)
+    )
 
     # Recipe banner
     add_round(s, 0.40, 6.22, 10.20, 1.92, BERRY, radius=0.08)
@@ -1284,6 +1339,7 @@ def build():
     prs.slide_width = Inches(SW)
     prs.slide_height = Inches(SH)
     prs.core_properties.title = "Strawberry DNA Extraction"
+    prs.core_properties.author = AUTHOR
     prs.core_properties.subject = (
         "Science fair poster slides. Print landscape, letter, actual size, one slide per page."
     )
